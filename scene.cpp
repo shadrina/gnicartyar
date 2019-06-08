@@ -89,25 +89,9 @@ Point3D Scene::castRay(const Point3D &orig, const Point3D &dir, size_t depth) {
         return material.diffuseColor * diffuseLightIntensity * material.albedo[0];
     }
 
-    // Reflect
     auto reflectDirMain = reflect(dir, N).normalize();
     auto reflectOrig = reflectDirMain * N < 0 ? point - N * OFFSET : point + N * OFFSET;
     auto reflectColor = castRay(reflectOrig, reflectDirMain, depth + 1);
-
-    static double MIN_SIZE = .8;
-    static double MAX_SIZE = 1.2;
-    auto step = 0.15;
-    std::vector<Point3D> reflectDirs;
-    for (auto size = MIN_SIZE; size <= MAX_SIZE; size += step) {
-        reflectDirs.emplace_back(reflect(dir, N, size).normalize());
-        // if (size < 1.) step -= .05;
-        // else step += .05;
-    }
-
-    for (auto reflectDir: reflectDirs) {
-        reflectColor = reflectColor + castRay(reflectOrig, reflectDir, depth + 1);
-    }
-    reflectColor = reflectColor * (1. / (reflectDirs.size() + 1));
 
     auto refractDir = refract(dir, N, material.refractiveIndex).normalize();
     auto refractOrig = refractDir * N < 0 ? point - N * OFFSET : point + N * OFFSET;
